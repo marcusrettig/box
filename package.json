@@ -1,0 +1,61 @@
+{
+  "name": "@marcusrettig/box",
+  "version": "0.1.2",
+  "description": "Minimalistic type-safe service container",
+  "keywords": [
+    "dependency injection",
+    "service container",
+    "typescript",
+    "type-safe",
+    "minimalistic",
+    "DI",
+    "DI container"
+  ],
+  "author": "Marcus Rettig <marcusrettig@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcusrettig/box"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "types": "./dist/box.d.ts",
+    "default": "./dist/box.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "xo && tsc --noEmit && ava",
+    "build": "del-cli dist && tsc -p tsconfig.build.json",
+    "coverage": "c8 ava"
+  },
+  "files": [
+    "dist/"
+  ],
+  "sideEffects": false,
+  "ava": {
+    "extensions": {
+      "ts": "module"
+    },
+    "nodeArguments": [
+      "--loader=tsx/esm",
+      "--no-warnings=ExperimentalWarning"
+    ],
+    "files": [
+      "test/**/*.test.ts"
+    ]
+  },
+  "xo": {
+    "space": 2
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "^2.0.2",
+    "ava": "^5.3.1",
+    "c8": "^8.0.1",
+    "del-cli": "^5.1.0",
+    "tsx": "^3.13.0",
+    "typescript": "^5.2.2",
+    "xo": "^0.56.0"
+  }
+}
