@@ -89,7 +89,7 @@ npx tsx examples/simple.ts
 To access the service container inside a service, it first has to be injected using the `inject()` method. The benefit of this approach is that the type of the injected service container can be automatically inferred, meaning any service that is accessed through the container is guaranteed to have been provided, eliminating the *"No provider found"* errors which you've probably seen in more dynamic dependency injection systems. This however comes with two caveats:
 
 1. The `inject()` function can only be called inside an injection context, such as a constructor, property initializer, or inside a factory function.
-2. Any service can only be accessed through the service container only after the container has been initialized (outside the injection context).
+2. Any service can be accessed through the service container only after the container has been initialized (outside the injection context).
 
 The concept of injection concept is similar to that in the Dependency Injection system of Angular 16 and you can read more about it in the [Angular Documentation](https://angular.io/guide/dependency-injection-context).
 
