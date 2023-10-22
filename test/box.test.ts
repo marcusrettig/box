@@ -198,3 +198,23 @@ test('circular dependency', t => {
     t.is(error?.message, 'Circular dependency detected in a');
   }
 });
+
+test('inject all', t => {
+  class EmployeeService {
+    $ = container.injectAll();
+
+    greet(name: string) {
+      return this.$.greeting + ' ' + name;
+    }
+  }
+
+  const container = new Box({
+    greeting: Box.value('Hello'),
+    employeeService: Box.class(EmployeeService),
+  });
+
+  {
+    const $ = container.init({});
+    t.is($.employeeService.greet('Michael Scott'), 'Hello Michael Scott');
+  }
+});

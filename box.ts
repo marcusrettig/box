@@ -100,4 +100,12 @@ export class Box<T extends Providers> {
     // This error is only possible if you bypass type checking
     throw new Error('No provider for ' + key.toString());
   };
+
+  injectAll = (): Instance<T> => {
+    if (!this.context) {
+      throw new Error('Called inject() outside injection context');
+    }
+
+    return this.context.instance as Instance<T>;
+  };
 }

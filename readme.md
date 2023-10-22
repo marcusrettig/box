@@ -4,6 +4,8 @@ Box is a minimalistic, type-safe, zero-dependency, service container.
 
 **Note:** This library is still in it's early stages and breaking changes are expected.
 
+**Breaking change:** In release `0.2.0`, the `inject()` function was changed to inject a single service instead of the entire container: `inject(name)`. To inject the entire service container you should not use the `injectAll()` function instead (added in `0.2.1`). See [example below](#injecting-all-dependencies).
+
 ## Install
 
 With npm:
@@ -78,6 +80,40 @@ start();
 
 ```sh
 npx tsx examples/simple.ts
+```
+</details>
+
+## Injecting all dependencies
+
+Release `0.2.0` introduced a breaking change where the `inject()` function now injects a single named dependency instead of the entire service container. Release `0.2.1` adds a function called `injectAll` which injects the full container. Please note that some dependencies may not be initialized when injecting the container, so it is unsafe to access it during the injection context.
+
+```typescript
+import { Box } from "@marcusrettig/box";
+
+class EmployeeService {
+  $ = container.injectAll();
+
+  greet(name: string) {
+    return this.$.greeting + ' ' + name;
+  }
+}
+
+const container = new Box({
+  greeting: Box.value('Hello'),
+  employeeService: Box.class(EmployeeService),
+});
+
+const $ = container.init({});
+
+console.log($.employeeService.greet('Michael Scott'));
+```
+
+<details>
+  <summary>Run this example</summary>
+  <p>
+
+```sh
+npx tsx examples/inject-all.ts
 ```
 </details>
 
