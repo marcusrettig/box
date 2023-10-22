@@ -84,7 +84,7 @@ test('external provider', t => {
   {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const error = t.throws(() => container.init({} as any));
-    t.is(error?.message, 'No provider for database');
+    t.is(error?.message, 'No provider for api');
   }
 });
 
