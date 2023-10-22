@@ -15,10 +15,10 @@ test('value provider', t => {
 
 test('factory provider', t => {
   function createEmployeeService() {
-    const $ = container.inject();
+    const greeting = container.inject('greeting');
     return {
       greet(name: string) {
-        return $.greeting + ' ' + name;
+        return greeting + ' ' + name;
       },
     };
   }
@@ -36,10 +36,10 @@ test('factory provider', t => {
 
 test('class provider', t => {
   class EmployeeService {
-    private readonly $ = container.inject();
+    private readonly greeting = container.inject('greeting');
 
     greet(name: string) {
-      return this.$.greeting + ' ' + name;
+      return this.greeting + ' ' + name;
     }
   }
 
@@ -60,12 +60,12 @@ test('external provider', t => {
   };
 
   class Api {
-    private readonly $ = container.inject();
+    private readonly protocol = container.inject('protocol');
 
     constructor(private readonly options: ApiOptions) {}
 
     url(endpoint: string) {
-      return this.$.protocol + '://' + this.options.host + '/' + endpoint;
+      return this.protocol + '://' + this.options.host + '/' + endpoint;
     }
   }
 
@@ -90,10 +90,10 @@ test('external provider', t => {
 
 test('overriding providers', t => {
   class EmployeeService {
-    private readonly $ = container.inject();
+    private readonly greeting = container.inject('greeting');
 
     greet(name: string) {
-      return this.$.greeting + ' ' + name;
+      return this.greeting + ' ' + name;
     }
   }
 
@@ -112,10 +112,10 @@ test('overriding providers', t => {
 
 test('injection context', t => {
   class Service {
-    private readonly $ = container.inject();
+    private readonly message = container.inject('message');
 
     getMessage() {
-      return this.$.message;
+      return this.message;
     }
   }
 
@@ -146,12 +146,12 @@ test('type inference', t => {
 
   type Inject = typeof container.inject;
 
-  type ExpectedInject = () => {
+  type ExpectedInject = <K extends 'value' | 'factory' | 'class' | 'external'>(key: K) => {
     value: number;
     factory: string;
     class: Map<unknown, unknown>;
     external: 'external';
-  };
+  }[K];
 
   expectType<Inject, ToEqual<ExpectedInject>>();
 
@@ -172,4 +172,29 @@ test('type inference', t => {
   expectType<Init, ToEqual<ExpectedInit>>();
 
   t.pass();
+});
+
+test('circular dependency', t => {
+  class A {
+    b = container.inject('b');
+  }
+
+  class B {
+    c = container.inject('c');
+  }
+
+  class C {
+    a = container.inject('a');
+  }
+
+  const container = new Box({
+    a: Box.class(A),
+    b: Box.class(B),
+    c: Box.class(C),
+  });
+
+  {
+    const error = t.throws(() => container.init({}));
+    t.is(error?.message, 'Circular dependency detected in a');
+  }
 });

@@ -32,6 +32,12 @@ type Init<T extends Providers> = Pretty<
 & Partial<Factories<OmitByType<T, External<unknown>>>>
 >;
 
+type InjectionContext = {
+  readonly instance: Record<string | number | symbol, unknown>;
+  readonly visited: Record<string | number | symbol, true>;
+  readonly overrides: Record<string | number | symbol, Factory<unknown>>;
+};
+
 export class Box<T extends Providers> {
   static external<V>(): External<V> {
     return {external: true};
@@ -49,34 +55,49 @@ export class Box<T extends Providers> {
     return () => value;
   }
 
-  private instance?: Instance<T>;
+  private context?: InjectionContext;
 
   constructor(private readonly providers: T) {}
 
-  init(init: Init<T>): Instance<T> {
-    const instance: Partial<Record<keyof T, unknown>> = {};
-    this.instance = instance as Instance<T>;
+  init = (overrides: Init<T>): Instance<T> => {
+    this.context = {
+      instance: {},
+      visited: {},
+      overrides,
+    };
 
-    for (const [key, provider] of Object.entries(this.providers)) {
-      if (key in init) {
-        instance[key as keyof T] = init[key as keyof T]();
-      } else if (provider.external) {
-        // This error is only possible if you bypass type checking
-        throw new Error('No provider for ' + key);
-      } else {
-        instance[key as keyof T] = provider();
-      }
+    for (const key of Object.keys(this.providers)) {
+      this.inject(key);
     }
 
-    delete this.instance;
+    const {instance} = this.context;
+    delete this.context;
     return instance as Instance<T>;
-  }
+  };
 
-  inject(): Instance<T> {
-    if (this.instance) {
-      return this.instance;
+  inject = <K extends keyof T>(key: K): Instance<T>[K] => {
+    if (!this.context) {
+      throw new Error('Called inject() outside injection context');
     }
 
-    throw new Error('Called inject() outside injection context');
-  }
+    if (key in this.context.instance) {
+      return this.context.instance[key] as Instance<T>[K];
+    }
+
+    if (this.context.visited[key]) {
+      throw new Error('Circular dependency detected in ' + key.toString());
+    }
+
+    this.context.visited[key] = true;
+
+    const provider = this.context.overrides[key] ?? this.providers[key];
+
+    if (provider && !provider.external) {
+      this.context.instance[key] = provider();
+      return this.context.instance[key] as Instance<T>[K];
+    }
+
+    // This error is only possible if you bypass type checking
+    throw new Error('No provider for ' + key.toString());
+  };
 }

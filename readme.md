@@ -2,6 +2,8 @@
 
 Box is a minimalistic, type-safe, zero-dependency, service container.
 
+**Note:** This library is still in it's early stages and breaking changes are expected.
+
 ## Install
 
 With npm:
@@ -43,11 +45,12 @@ class Database {
 }
 
 class EmployeeService {
-  // Services can inject the service container to consume other services.
-  $ = container.inject();
+  // Services can inject other services using the inject function.
+  // The type is automatically inferred, in this case to Database.
+  database = container.inject('database');
 
   findAll() {
-    return this.$.database.findAll<{name: string}>('employees');
+    return this.database.findAll<{name: string}>('employees');
   }
 }
 
@@ -86,14 +89,14 @@ npx tsx examples/simple.ts
 
 ## Injection Context
 
-To access the service container inside a service, it first has to be injected using the `inject()` method. The benefit of this approach is that the type of the injected service container can be automatically inferred, meaning any service that is accessed through the container is guaranteed to have been provided, eliminating the *"No provider found"* errors which you've probably seen in more dynamic dependency injection systems. This however comes with two caveats:
+A service can access another service by injecting it using the `inject()` function. The benefit of this approach is that the type of the injected service is automatically inferred, and that the service is guaranteed to have been provided, eliminating the *"No provider found"* errors which you've probably seen in more dynamic dependency injection systems. This however comes with two caveats:
 
 1. The `inject()` function can only be called inside an injection context, such as a constructor, property initializer, or inside a factory function.
-2. Any service can be accessed through the service container only after the container has been initialized (outside the injection context).
+2. Circular dependencies are not allowed. For example, if service `A` injects service `B` which injects service `C` which injects service `A` an error will be thrown.
 
-The concept of injection concept is similar to that in the Dependency Injection system of Angular 16 and you can read more about it in the [Angular Documentation](https://angular.io/guide/dependency-injection-context).
+The concept of injection context is similar to that in the Dependency Injection system of Angular 16 and you can read more about it in the [Angular Documentation](https://angular.io/guide/dependency-injection-context).
 
-**TLDR:** Only call `inject()` in a constructor, property initializer, or factory function. Only access the service container (`this.$` in the examples) after it has been initialized (e.g. outside the constructor).
+**TLDR:** Only call `inject()` in a constructor, property initializer, or factory function. Avoid circular dependencies.
 
 The following examples demonstrates the injection context concept:
 
@@ -101,23 +104,23 @@ The following examples demonstrates the injection context concept:
 // Property initializer:
 class EmployeeService {
   // Inside injection context:
-  $ = container.inject();
+  database = container.inject('database');
 
   findAll() {
     // Outside injection context (after initialization):
-    return this.$.database.findAll('employees');
+    return this.database.findAll('employees');
   }
 }
 
 // Factory function:
 class createEmployeeService() {
   // Inside injection context:
-  const $ = container.inject();
+  const database = container.inject('database');
 
   return {
     findAll() {
       // Outside injection context (after initialization):
-      return $.database.findAll('employees');
+      return database.findAll('employees');
     }
   }
 }

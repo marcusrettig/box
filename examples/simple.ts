@@ -11,11 +11,12 @@ class Database {
 }
 
 class EmployeeService {
-  // Services can inject the service container to consume other services.
-  $ = container.inject();
+  // Services can inject other services using the inject function.
+  // The type is automatically inferred, in this case to Database.
+  database = container.inject('database');
 
   findAll() {
-    return this.$.database.findAll<{name: string}>('employees');
+    return this.database.findAll<{name: string}>('employees');
   }
 }
 

@@ -3,4 +3,5 @@ dist
 coverage
 examples/*
 !examples/simple.ts
+playground/
 .DS_Store
