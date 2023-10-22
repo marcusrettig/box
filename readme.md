@@ -88,7 +88,7 @@ npx tsx examples/simple.ts
 Release `0.2.0` introduced a breaking change where the `inject()` function now injects a single named dependency instead of the entire service container. Release `0.2.1` adds a function called `injectAll` which injects the full container. Please note that some dependencies may not be initialized when injecting the container, so it is unsafe to access it during the injection context.
 
 ```typescript
-import { Box } from "@marcusrettig/box";
+import {Box} from '@marcusrettig/box';
 
 class EmployeeService {
   $ = container.injectAll();
