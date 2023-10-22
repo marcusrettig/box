@@ -120,7 +120,7 @@ npx tsx examples/inject-all.ts
 ## Design Goals
 
 - **Type-Safe:** Detect all type errors at compile time (given that you follow the two rules described in the next section). Say goodbye to *"No provider found"* and similar errors.
-- **Minimalistic:** The library consists of fewer than 50 lines of code (excluding types and comments). It should be easy for anyone to understand what goes on under the hood.
+- **Minimalistic:** The library consists of fewer than 100 lines of code (excluding types and comments). It should be easy for anyone to understand what goes on under the hood.
 - **Zero-dependency:** No external dependencies makes it easy to use the library without a package manager such as npm, for example in the Deno runtime.
 
 ## Injection Context

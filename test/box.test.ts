@@ -1,5 +1,5 @@
 import test from 'ava';
-import {Box} from '../box.js';
+import {Box, type Provider} from '../box.js';
 import {expectType, type ToEqual} from './expect-type.js';
 
 test('value provider', t => {
@@ -158,10 +158,10 @@ test('type inference', t => {
   type Init = typeof container.init;
 
   type ExpectedInit = (overrides: {
-    value?: () => number;
-    factory?: () => string;
-    class?: () => Map<unknown, unknown>;
-    external: () => 'external';
+    value?: Provider<number>;
+    factory?: Provider<string>;
+    class?: Provider<Map<unknown, unknown>>;
+    external: Provider<'external'>;
   }) => {
     value: number;
     factory: string;
@@ -175,27 +175,44 @@ test('type inference', t => {
 });
 
 test('circular dependency', t => {
-  class A {
-    b = container.inject('b');
+  class ServiceA {
+    serviceB = container.inject('serviceB');
   }
 
-  class B {
-    c = container.inject('c');
+  class ServiceB {
+    serviceC = container.inject('serviceC');
   }
 
-  class C {
-    a = container.inject('a');
+  class ServiceC {
+    serviceA = container.inject('serviceA');
   }
 
   const container = new Box({
-    a: Box.class(A),
-    b: Box.class(B),
-    c: Box.class(C),
+    serviceA: Box.class(ServiceA),
+    serviceB: Box.class(ServiceB),
+    serviceC: Box.class(ServiceC),
   });
 
   {
     const error = t.throws(() => container.init({}));
-    t.is(error?.message, 'Circular dependency detected in a');
+    t.is(error?.message, 'Circular dependency detected in "serviceA" (see stack trace)');
+
+    const trace = (error?.stack ?? '')
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('at '))
+      .map(line => line.split(' ')[1] ?? line);
+
+    t.deepEqual(trace.slice(0, 8), [
+      'Box.inject',
+      'ServiceC',
+      'Box.inject',
+      'ServiceB',
+      'Box.inject',
+      'ServiceA',
+      'Box.inject',
+      'Box.init',
+    ], 'produces simple stack trace');
   }
 });
 
