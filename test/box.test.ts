@@ -71,14 +71,14 @@ test('external provider', t => {
 
   const container = new Box({
     protocol: Box.value<'http' | 'https'>('https'),
-    database: Box.external<Api>(),
+    api: Box.external<Api>(),
   });
 
   {
     const $ = container.init({
-      database: Box.factory(() => new Api({host: 'example.com'})),
+      api: Box.factory(() => new Api({host: 'example.com'})),
     });
-    t.is($.database.url('employees'), 'https://example.com/employees');
+    t.is($.api.url('employees'), 'https://example.com/employees');
   }
 
   {
