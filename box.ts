@@ -103,7 +103,7 @@ export class Box<T extends Providers> {
 
   injectAll = (): Instance<T> => {
     if (!this.context) {
-      throw new Error('Called inject() outside injection context');
+      throw new Error('Called injectAll() outside injection context');
     }
 
     return this.context.instance as Instance<T>;

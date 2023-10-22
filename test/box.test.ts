@@ -217,4 +217,9 @@ test('inject all', t => {
     const $ = container.init({});
     t.is($.employeeService.greet('Michael Scott'), 'Hello Michael Scott');
   }
+
+  {
+    const error = t.throws(() => container.injectAll());
+    t.is(error?.message, 'Called injectAll() outside injection context');
+  }
 });
