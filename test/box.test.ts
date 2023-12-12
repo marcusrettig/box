@@ -240,3 +240,35 @@ test('inject all', t => {
     t.is(error?.message, 'Called injectAll() outside injection context');
   }
 });
+
+test('extend', t => {
+  class Api {
+    url(endpoint: string): string {
+      return 'http://example.com/' + endpoint;
+    }
+  }
+
+  const container = new Box({
+    api: Box.class(Api),
+  });
+
+  class TestApi implements Api {
+    url(endpoint: string): string {
+      return 'http://testing.example.com/' + endpoint;
+    }
+  }
+
+  const testContainer = container.extend({
+    api: Box.class(TestApi),
+  });
+
+  {
+    const $ = testContainer.init({});
+    t.is($.api.url('employees'), 'http://testing.example.com/employees');
+  }
+
+  {
+    const $ = container.init({});
+    t.is($.api.url('employees'), 'http://example.com/employees');
+  }
+});
