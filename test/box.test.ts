@@ -249,7 +249,7 @@ test('extend', t => {
   }
 
   const container = new Box({
-    api: Box.class(Api),
+    api: Box.external<Api>(),
   });
 
   class TestApi implements Api {

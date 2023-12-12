@@ -38,7 +38,11 @@ type Init<T extends Declarations> = Pretty<
 & Partial<ReplaceExternal<OmitByType<T, External<unknown>>>>
 >;
 
-type Extend<T extends Declarations, U extends Partial<T>> = Pretty<Omit<T, keyof U> & U>;
+type ExtendDeclarations<T extends Declarations> = {
+  [K in keyof T]?: Declaration<DeclarationValue<T[K]>>
+};
+
+type Extend<T, U> = Pretty<Omit<T, keyof U> & U>;
 
 type InjectionContext = {
   readonly instance: Record<string | number | symbol, unknown>;
@@ -67,7 +71,7 @@ export class Box<T extends Declarations> {
 
   constructor(private readonly declarations: T) {}
 
-  extend<U extends Partial<T>>(declarations: U): Box<Extend<T, U>> {
+  extend<U extends ExtendDeclarations<T>>(declarations: U): Box<Extend<T, U>> {
     return new Box({...this.declarations, ...declarations} as Extend<T, U>);
   }
 
