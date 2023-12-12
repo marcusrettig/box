@@ -68,14 +68,16 @@ export class Box<T extends Declarations> {
   }
 
   private context?: InjectionContext;
+  private injector: Box<T> | undefined = undefined;
 
-  constructor(private readonly declarations: T) {}
+  constructor(private readonly declarations: T, private readonly parent?: Box<any>) {}
 
   extend<U extends ExtendDeclarations<T>>(declarations: U): Box<Extend<T, U>> {
-    return new Box({...this.declarations, ...declarations} as Extend<T, U>);
+    return new Box({...this.declarations, ...declarations} as Extend<T, U>, this);
   }
 
   init(providers: Init<T>): Instance<T> {
+    this.parent?.setInjector(this);
     this.context = {
       instance: {},
       visited: {},
@@ -88,10 +90,16 @@ export class Box<T extends Declarations> {
 
     const {instance} = this.context;
     delete this.context;
+    this.parent?.setInjector(undefined);
+
     return instance as Instance<T>;
   }
 
   inject<K extends keyof T>(key: K): Instance<T>[K] {
+    if (this.injector) {
+      return this.injector.inject(key);
+    }
+
     if (!this.context) {
       throw new Error('Called inject() outside injection context');
     }
@@ -135,5 +143,10 @@ export class Box<T extends Declarations> {
     }
 
     return this.context.instance as Instance<T>;
+  }
+
+  private setInjector(injector: Box<T> | undefined): void {
+    this.injector = injector;
+    this.parent?.setInjector(injector);
   }
 }

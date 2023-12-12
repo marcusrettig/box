@@ -243,32 +243,28 @@ test('inject all', t => {
 
 test('extend', t => {
   class Api {
+    baseUrl = container.inject('baseUrl');
+
     url(endpoint: string): string {
-      return 'http://example.com/' + endpoint;
+      return this.baseUrl + '/' + endpoint;
     }
   }
 
   const container = new Box({
-    api: Box.external<Api>(),
+    baseUrl: Box.external<string>(),
+    api: Box.class(Api),
   });
 
-  class TestApi implements Api {
-    url(endpoint: string): string {
-      return 'http://testing.example.com/' + endpoint;
-    }
-  }
+  const stagingContainer = container.extend({
+    baseUrl: Box.value('http://staging.example.com'),
+  });
 
-  const testContainer = container.extend({
-    api: Box.class(TestApi),
+  const testingContainer = stagingContainer.extend({
+    baseUrl: Box.value('http://testing.example.com'),
   });
 
   {
-    const $ = testContainer.init({});
+    const $ = testingContainer.init({});
     t.is($.api.url('employees'), 'http://testing.example.com/employees');
-  }
-
-  {
-    const $ = container.init({});
-    t.is($.api.url('employees'), 'http://example.com/employees');
   }
 });
