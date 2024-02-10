@@ -244,6 +244,7 @@ test('inject all', t => {
 test('extend', t => {
   class Api {
     baseUrl = container.inject('baseUrl');
+    all = container.injectAll();
 
     url(endpoint: string): string {
       return this.baseUrl + '/' + endpoint;

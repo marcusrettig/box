@@ -138,6 +138,10 @@ export class Box<T extends Declarations> {
   }
 
   injectAll(): Instance<T> {
+    if (this.injector) {
+      return this.injector.injectAll();
+    }
+
     if (!this.context) {
       throw new Error('Called injectAll() outside injection context');
     }
